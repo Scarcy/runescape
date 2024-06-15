@@ -6,11 +6,19 @@ import matplotlib.pyplot as plt
 
 
 def simulate_one_run(target_pearls: int, probability: float):
+    """
+    Function that the ThreadPool Threads will execute.
+    This function will be executed in parallel.
+
+    """
     total_pearls: int = 0
     chests_opened: int = 0
 
     while total_pearls < target_pearls:
+        # RVS returns a random amount of chests needed to get one pearl drop
+        # This saves me from having a 2D Loop which is significantly slower
         chests_opened += stats.geom.rvs(p=probability)
+        # Since Pearl Drops range from 10 to 20, this gives a random pearl amount in that range
         total_pearls += stats.randint.rvs(10, 21)
 
     return chests_opened
@@ -20,14 +28,21 @@ def run_threaded(target_pearls: int, probability: float, simulations: int = 10_0
                  maxworkers: int = None) -> np.ndarray:
     results = []
     completed_simulations = 0
+    # Sets up the ThreadPool and tells the threads which function to run
+    # When a thread is finished executing, it comes back to start another Simulation Run
+    # This is means we can limit thread creation, since the same 8-10 threads work until the job is done.
     with ThreadPoolExecutor(max_workers=maxworkers) as executor:
         futures = {executor.submit(simulate_one_run, target_pearls, probability): i
                    for i in range(simulations)}
-
+        # We get here when threads finish executing.
         for i, future in enumerate(as_completed(futures)):
             try:
                 completed_simulations += 1
+                # Add the result from the thread to the "results" list
                 results.append(future.result())
+
+                # A "Progress Bar". Prints out every 10k finished simulations.
+                # This is because the runs take a very long time at 1m+ simulations
                 if i % 10_000 == 0:
                     print(f"{completed_simulations} Simulations out of {simulations}...")
             except Exception as ex:
