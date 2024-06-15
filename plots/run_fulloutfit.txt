@@ -1,0 +1,15 @@
+/usr/bin/python3 /Users/ellefsen/dev/python/runescape/gotr_threaded.py 
+How many pearls?: 1350
+How many simulations?: 1000000
+Mean: 627.9
+Variance: 3922.7
+Standard Deviation: 62.6
+Normaltest: NormaltestResult(statistic=6924.87604665356, pvalue=0.0)
+KSTest: KstestResult(statistic=1.0, pvalue=0.0, statistic_location=600, statistic_sign=-1)
+The Distribution is Normal
+Mean Confidence Interval: (627.783480847504, 628.028993152496)
+CenterY: 0.0038338815566833747
+Sdev: 62.631840923765225
+Mean: 627.906237
+
+Process finished with exit code 0
