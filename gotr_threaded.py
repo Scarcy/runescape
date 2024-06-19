@@ -3,7 +3,7 @@ import scipy.stats as stats
 from matplotlib.lines import Line2D
 from concurrent.futures import ThreadPoolExecutor, as_completed
 import matplotlib.pyplot as plt
-
+import time
 
 def simulate_one_run(target_pearls: int, probability: float):
     """
@@ -13,8 +13,20 @@ def simulate_one_run(target_pearls: int, probability: float):
     """
     total_pearls: int = 0
     chests_opened: int = 0
+    p_lantern: float = 1/700
+    p_dye: float = 3 * (1/1200)
 
     while total_pearls < target_pearls:
+        # If we get dye drop, sell it for 50 pearls
+        #if stats.geom.rvs(p=p_dye) == 1:
+        #    chests_opened += 1
+        #    total_pearls += 50
+        #    continue
+        # If we get lantern drop, sell it for 100 pearls
+        #if stats.geom.rvs(p=p_lantern) == 1:
+        #    chests_opened += 1
+        #    total_pearls += 100
+        #   continue
         # RVS returns a random amount of chests needed to get one pearl drop
         # This saves me from having a 2D Loop which is significantly slower
         chests_opened += stats.geom.rvs(p=probability)
@@ -67,7 +79,7 @@ def graph2(arr: np.ndarray, pearls: int, sims: int):
     # Plots the Histogram
     n, bins, patches = ax.hist(arr, bins=bins_arr, density=True, histtype='stepfilled', alpha=0.2)
 
-    ax.set_xlim(0)  # This might be deleted or changed. It's config for the x-axis
+    ax.set_xlim(arr.min() - 5, arr.max() + 5)  # This might be deleted or changed. It's config for the x-axis
     sdev = np.std(arr) # Compute the Standard Deviation
     smean = np.mean(arr) # Compute the Mean
 
@@ -110,9 +122,10 @@ def graph2(arr: np.ndarray, pearls: int, sims: int):
     )
 
     ax.legend(handles=custom_lines, loc='best', frameon=False)
-
+    ax.set_xlabel('Reward Guardians Opened')
+    ax.set_ylabel('Probability Density')
     plt.suptitle("Guardians of the Rift")
-    plt.title(f"Simulations to find how many Reward Chests to open for {pearls} Abyssal Pearls", fontsize=9)
+    plt.title(f"Simulations to find how many Reward Chests to open for {pearls} Abyssal Pearls\n(Selling Lanterns and Dyes)", fontsize=9)
     plt.show()
 
     print(f"CenterY: {center_y}\nSdev: {sdev}\nMean: {smean}")
@@ -126,12 +139,16 @@ if __name__ == "__main__":
     target_pearls: int = int(input("How many pearls?: "))
     probability: float = 1 / 6.94
     simulations: int = int(input("How many simulations?: "))
+    start_time = time.perf_counter()
     result = run_threaded(target_pearls, probability, simulations=simulations)
-
+    end_time = time.perf_counter()
+    print(f"Time: {(end_time - start_time):.2f} seconds")
     var = np.var(result)
     std = np.std(result)
     mean = np.mean(result)
+    median = np.median(result)
     print(f"Mean: {mean:.1f}")
+    print(f"Median: {median:.1f}")
     print(f"Variance: {var:.1f}")
     print(f"Standard Deviation: {std:.1f}")
 
